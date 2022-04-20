@@ -79,6 +79,14 @@ describe('4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하�
     test('직전기록이 [결제요청] 인 경우', () => {
         requestOrder(newOrder)
         let beforeStatus = newOrder._status;
+        completeOrder(newOrder);
+        expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
+        expect(newOrder._status).not.toEqual(beforeStatus);
+    });
+
+    test('직전기록이 [결제시작] 인 경우', () => {
+        let beforeStatus = newOrder._status;
+        requestOrder(newOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
 
     })
 })
