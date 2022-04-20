@@ -27,7 +27,7 @@
 // 5. 주문의 상세내용은 결제시작 상태(결제요청 이전)에서만 변경 가능하다.
 //     1. 여기서 주문의 상세내용이라 함은, 결제 수단 등 사용자의 결제 정보를 의미한다.
 
-import Order, {orderStatus, requestOrder, completeOrder} from '../app/func/Order'
+import Order, {orderStatus, requestOrder, completeOrder, failOrder} from '../app/func/Order'
 
 // test No.1
 // 1. 주문 객체는 아래와 같은 상태를 가진다
@@ -43,11 +43,11 @@ describe('객체의 상태확인 테스트', () => {
     beforeEach(() => {
         newOrder = createSampleOrder('MacBook', 10);
     })
-    test('처음 상태는 started 이어야 한다.', () => {
+    test('1. 결제시작: 직전기록이 비어있어야 함.', () => {
         expect(newOrder._status).toEqual(orderStatus.PAY_STARTED);
     });
 
-    test('결제요청을 하기위해선 직전기록이 결제시작 이어야 한다.', () => {
+    test('2. 결제요청: 직전기록이 결제시작 이어야 함', () => {
         let beforeStatus = newOrder._status;
         expect(beforeStatus).toEqual(orderStatus.PAY_STARTED);
         // 결제요청하는 함수
@@ -56,39 +56,71 @@ describe('객체의 상태확인 테스트', () => {
         expect(newOrder._status).not.toEqual(beforeStatus);
     });
 
-    test('결제완료는 직전기록이 결제요청 이어야 한다.', () => {
+    test('3. 결제완료: 직전기록이 결제요청이어야 함', () => {
         requestOrder(newOrder);
         let beforeStatus = newOrder._status;
         completeOrder(newOrder);
         expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
     })
+
+    // 4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나
+    // 위의 시나리오의 경우 두가지 분기가 가능하다.
+    // 결제시작 -> 결제실패 로 가는 경우
+    // 결제요청 -> 결제실패 로 가는 경우 이다. 이 중 결제시작 -> 결제실패로 가는 경우는 후에 서술되어 있지만
+    // 재고가 없을 경우를 의미한다.
+
+    describe('4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나', () => {
+        let newOrder;
+        beforeEach(() => {
+            newOrder = createSampleOrder('MacBook', 11);
+        });
+        test('직전기록이 [결제요청] 인 경우', () => {
+            requestOrder(newOrder)
+            let beforeStatus = newOrder._status;
+            completeOrder(newOrder);
+            expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
+            failOrder(newOrder)
+            expect(newOrder._status).not.toEqual(beforeStatus);
+        });
+
+        test('직전기록이 [결제시작] 인 경우', () => {
+            let overOrder = createSampleOrder('MacBook', 21);
+            requestOrder(overOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
+            // 만약 재고가 부족했다면 status는 여전히 started 일것
+            let beforeStatus = overOrder._status;
+            expect(beforeStatus).toEqual(orderStatus.PAY_STARTED);
+            failOrder(overOrder);
+            expect(overOrder._status).not.toEqual(beforeStatus);
+
+        })
+    })
+
+    //5. 취소요청: 직전기록이 [결제완료, 결제실패, 환불실패] 중 하나
+    // describe('5. 취소요청: 직전기록이 [결제완료, 결제실패, 환불실패] 중 하나', () => {
+    //     test('직전기록이 결제완료 인 경우', () => {
+    //         let newOrder = createSampleOrder('MacBook', 10);
+    //         requestOrder(newOrder);
+    //         completeOrder(newOrder);
+    //         let beforeStatus = newOrder._status;
+    //
+    //     })
+    // })
 });
 
-// test No.2
-// 4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나
-// 위의 시나리오의 경우 두가지 분기가 가능하다.
-// 결제시작 -> 결제실패 로 가는 경우
-// 결제요청 -> 결제실패 로 가는 경우 이다. 이 중 결제시작 -> 결제실패로 가는 경우는 후에 서술되어 있지만
-// 재고가 없을 경우를 의미한다.
+// 3. 아래와 같은 경우 결제가 실패한다
+//     1. 사용자의 결제정보가 올바르지 않을 경우
+//         1. 카드사와 카드정보가 일치하지 않는 경우
+//         2. 카드가 한도초과 일 경우
+//     2. 결제를 시작한 상품의 재고가 없을 경우
+//         1. 결제 시작 이후 결제요청으로 가기전 (사용자가 결제 정보를 입력하기 전) 재고를 확인한다.
+//         이때 재고가 없다면 주문의 상태는 결제 요청으로 바뀌지 않고 결제 실패로 바뀌게 된다.
 
-describe('4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나', () => {
-    let newOrder;
+describe('결제가 실패하는 경우 테스트', () => {
+    let failOrder;
     beforeEach(() => {
-        newOrder = createSampleOrder('MacBook', 11);
-    });
-    test('직전기록이 [결제요청] 인 경우', () => {
-        requestOrder(newOrder)
-        let beforeStatus = newOrder._status;
-        completeOrder(newOrder);
-        expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
-        expect(newOrder._status).not.toEqual(beforeStatus);
+        failOrder = createSampleOrder('iPhone', 21);
     });
 
-    test('직전기록이 [결제시작] 인 경우', () => {
-        let beforeStatus = newOrder._status;
-        requestOrder(newOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
-
-    })
 })
 
 

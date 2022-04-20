@@ -1,3 +1,5 @@
+import {getProductNum} from "../api/mongo";
+
 export const orderStatus = {
     PAY_STARTED: 'payStarted',
     PAY_REQUEST: 'payRequest',
@@ -45,12 +47,22 @@ export default class Order {
 export const requestOrder = (orderObject) => {
     let {_userName, _productName, _status, _orderNum, _date} = orderObject;
     // 재고 확인을 해줘야함.
-
-    orderObject._status = orderStatus.PAY_REQUEST;
-
+    let presentNum = getProductNum(_productName);
+    if (_orderNum <= presentNum) {
+        orderObject._status = orderStatus.PAY_REQUEST;
+    }
 }
 
 export const completeOrder = (orderObject) => {
     let {_userName, _productName, _status, _orderNum, _date} = orderObject;
     orderObject._status = orderStatus.PAY_COMPLETE;
 }
+
+export const failOrder = (orderObject) => {
+    let {_userName, _productName, _status, _orderNum, _date} = orderObject;
+    orderObject._status = orderStatus.PAY_FAILED;
+}
+
+// export const requestCancel = (orderObject) => {
+//
+// }
