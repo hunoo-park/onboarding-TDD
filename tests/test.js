@@ -63,6 +63,12 @@ describe('객체의 상태확인 테스트', () => {
         expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
     })
 
+    test('추가 테스트, 결제완료 후 재고가 변경되었는가?', () => {
+        requestOrder(newOrder);
+        completeOrder(newOrder);
+        // setProductNum 함수를 db와 연결해야 재고변경 확인가능.
+    })
+
     // 4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나
     // 위의 시나리오의 경우 두가지 분기가 가능하다.
     // 결제시작 -> 결제실패 로 가는 경우

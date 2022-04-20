@@ -1,4 +1,4 @@
-import {getProductNum} from "../api/mongo";
+import {getProductNum, setProductNum} from "../api/mongo";
 
 export const orderStatus = {
     PAY_STARTED: 'payStarted',
@@ -55,7 +55,10 @@ export const requestOrder = (orderObject) => {
 
 export const completeOrder = (orderObject) => {
     let {_userName, _productName, _status, _orderNum, _date} = orderObject;
-    orderObject._status = orderStatus.PAY_COMPLETE;
+    if (setProductNum(_orderNum, _productName)) {
+        orderObject._status = orderStatus.PAY_COMPLETE;
+    }
+
 }
 
 export const failOrder = (orderObject) => {
