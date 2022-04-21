@@ -116,7 +116,16 @@ export const requestCancel = (orderObject) => {
 
 export const completeCancel = (orderObject) => {
     // 취소 요건을 달성하는 것이라면
-    orderObject.status = orderStatus.CANCEL_COMPLETE;
+    // 취소 요건 -> 구매 후 7일이 지났다면 안됨.
+    let purchasedTime = orderObject._purchasedDate;
+    let presentTime = Date.now();
+    purchasedTime = parseInt(purchasedTime);
+    let timeDiff = calDifDate(purchasedTime, presentTime);
+    if (timeDiff < 7) {
+        orderObject.status = orderStatus.CANCEL_COMPLETE;
+    } else {
+        orderObject.status = orderStatus.CANCEL_FAILED;
+    }
     // 아니라면 cancel_fail로 변경할예정.
     return orderObject;
 }
@@ -131,3 +140,7 @@ export const completeRefund = (orderObject) => {
     orderObject.status = orderStatus.REFUND_COMPLETE;
     return orderObject;
 }
+
+const calDifDate = (orderedDate, nowDate) => {
+    return (nowDate - orderedDate) / (1000*3600*24);
+};
