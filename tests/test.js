@@ -27,7 +27,8 @@
 // 5. 주문의 상세내용은 결제시작 상태(결제요청 이전)에서만 변경 가능하다.
 //     1. 여기서 주문의 상세내용이라 함은, 결제 수단 등 사용자의 결제 정보를 의미한다.
 
-import Order, {orderStatus, requestOrder, completeOrder, failOrder} from '../app/func/Order'
+import Order, {orderStatus, requestOrder, completeOrder, sendOrder, requestCancel,
+    completeCancel, requestRefund, completeRefund} from '../app/func/Order'
 import Card, {validateCard, limitCard} from '../app/func/Card'
 
 // test No.1
@@ -52,21 +53,21 @@ describe('객체의 상태확인 테스트', () => {
         let beforeStatus = newOrder._status;
         expect(beforeStatus).toEqual(orderStatus.PAY_STARTED);
         // 결제요청하는 함수
-        requestOrder(newOrder);
+        let changedOrder = requestOrder(newOrder);
         // 결제 이후엔 이전과 다른 상태여야 함
-        expect(newOrder._status).not.toEqual(beforeStatus);
+        expect(changedOrder._status).not.toEqual(beforeStatus);
     });
 
     test('3. 결제완료: 직전기록이 결제요청이어야 함', () => {
-        requestOrder(newOrder);
+        let changedOrder = requestOrder(newOrder);
         let beforeStatus = newOrder._status;
-        completeOrder(newOrder);
+        let completedOrder = completeOrder(changedOrder);
         expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
     })
 
     test('추가 테스트, 결제완료 후 재고가 변경되었는가?', () => {
-        requestOrder(newOrder);
-        completeOrder(newOrder); // 현재 completeOrder 안에 있는 setProductNum함수에서 재고 변경한다고 가정.
+        let changedOrder = requestOrder(newOrder);
+        let completedOrder = completeOrder(changedOrder); // 현재 completeOrder 안에 있는 setProductNum함수에서 재고 변경한다고 가정.
 
     })
 
@@ -82,36 +83,93 @@ describe('객체의 상태확인 테스트', () => {
             newOrder = createSampleOrder('MacBook', 11, 100);
         });
         test('직전기록이 [결제요청] 인 경우', () => {
-            requestOrder(newOrder)
+            let changedOrder = requestOrder(newOrder)
             let beforeStatus = newOrder._status;
-            completeOrder(newOrder);
+            let completedOrder = completeOrder(changedOrder);
             expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
-            expect(newOrder._status).not.toEqual(beforeStatus);
+            expect(completedOrder._status).not.toEqual(beforeStatus);
         });
 
         test('직전기록이 [결제시작] 인 경우', () => {
             let overOrder = createSampleOrder('MacBook', 21, 100);
-            requestOrder(overOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
+            let changedOrder = requestOrder(overOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
             // 만약 재고가 부족했다면 status는 여전히 started 일것
             let beforeStatus = overOrder._status;
             expect(beforeStatus).toEqual(orderStatus.PAY_STARTED);
-            completeOrder(overOrder);
-            expect(overOrder._status).toEqual(orderStatus.PAY_FAILED);
-            expect(overOrder._status).not.toEqual(beforeStatus);
+            let completedOrder = completeOrder(changedOrder);
+            expect(completedOrder._status).toEqual(orderStatus.PAY_FAILED);
+            expect(completedOrder._status).not.toEqual(beforeStatus);
             // 전제를 가정해놓고 테스트하고자 하는 함수에 집중. spyOn.
         })
     })
 
     //5. 취소요청: 직전기록이 [결제완료, 결제실패, 환불실패] 중 하나
-    // describe('5. 취소요청: 직전기록이 [결제완료, 결제실패, 환불실패] 중 하나', () => {
-    //     test('직전기록이 결제완료 인 경우', () => {
-    //         let newOrder = createSampleOrder('MacBook', 10);
-    //         requestOrder(newOrder);
-    //         completeOrder(newOrder);
-    //         let beforeStatus = newOrder._status;
-    //
-    //     })
-    // })
+    describe('5. 취소요청: 직전기록이 [결제완료, 환불실패] 중 하나', () => {
+        let newOrder, changedOrder, completedOrder;
+        beforeEach(() => {
+            newOrder = createSampleOrder('MacBook', 10);
+            changedOrder = requestOrder(newOrder);
+            completedOrder = completeOrder(changedOrder);
+
+        })
+
+        test('직전기록이 결제완료 인 경우', () => {
+            let beforeStatus = completedOrder._status;
+            let canceledOrder = requestCancel(completedOrder);
+            expect(beforeStatus).toEqual(orderStatus.PAY_COMPLETE);
+            expect(canceledOrder._status).toEqual(orderStatus.CANCEL_REQUEST);
+        });
+
+        test('직전기록이 환불실패인 경우', () => {
+
+        });
+        // 6. 취소실패: 직전기록이 취소요청 이어야 함
+    //     7. 취소완료: 직전기록이 취소요청 이어야 함
+
+        test('6. 취소실패: 직전기록이 취소요청 이어야 함', () => {
+
+        });
+
+        test('7. 취소완료: 직전기록이 취소요청 이어야 함', () => {
+            let canceledOrder = requestCancel(completedOrder);
+            let beforeStatus = canceledOrder._status;
+            expect(beforeStatus).toEqual(orderStatus.CANCEL_REQUEST);
+        });
+
+        //     8. 환불요청: 직전기록이 [결제완료, 취소실패] 중 하나
+        //     9. 환불완료: 직전기록이 환불요청 이어야 함
+        //     10. 환불실패: 직전기록이 환불요청 이어야 함
+        test('환불요청, 직전기록이 결제완료 인 경우', () => {
+            let beforeStatus = completedOrder._status;
+            let refundedOrder = requestRefund(completedOrder);
+            expect(beforeStatus).toEqual(orderStatus.PAY_COMPLETE);
+        });
+
+        test('환불요청, 직전기록이 취소 실패 인 경우', () => {
+
+        });
+    });
+
+
+
+    test('9. 환불완료: 직전기록이 환불요청 이어야 함', () => {
+        let newOrder = createSampleOrder('watch', 3, 1000);
+        let refundedOrder = requestRefund(newOrder);
+        let beforeStatus = refundedOrder._status;
+        expect(beforeStatus).toEqual(orderStatus.REFUND_REQUEST);
+        let completedOrder = completeRefund(refundedOrder);
+        expect(completedOrder._status).toEqual(orderStatus.REFUND_COMPLETE);
+    });
+    test('10. 환불실패: 직전기록이 환불요청 이어야 함', () => {
+        let newOrder = createSampleOrder('watch', 3, 1000);
+        let refundedOrder = requestRefund(newOrder);
+        let beforeStatus = refundedOrder._status;
+        expect(beforeStatus).toEqual(orderStatus.REFUND_REQUEST);
+        // 이 다음 확인은 completeRefund 함수에서 실패할 경우이다.
+    });
+
+
+
 });
 
 // 3. 아래와 같은 경우 결제가 실패한다
@@ -138,11 +196,27 @@ describe('결제가 실패하는 경우 테스트', () => {
             let userCard = createSampleCard(17, 101010);
             expect(limitCard(userCard, failOrder)).toBe(false);
         });
-
-        test('2. 결제를 시작한 상품의 재고가 없을 경우', () => {
-
-        })
     });
+
+    describe( '2. 결제를 시작한 뒤 발생하는 액션의 문제', () => {
+        test('결제를 시작한 상품의 재고가 없을 경우', () => {
+            let beforeStatus = failOrder._status;
+            let changedOrder = requestOrder(failOrder);
+            expect(changedOrder._status).toEqual(orderStatus.PAY_STARTED);
+
+        });
+
+        test('정상적인 응답이 오지 않았을 경우', () => {
+            let newOrder = createSampleOrder('iPad', 15, 200);
+            let beforeStatus = newOrder._status;
+            let changedOrder = requestOrder(newOrder);
+            sendOrder(changedOrder);
+            const sendResult = jest.fn();
+            sendResult.mockReturnValue(false);
+
+            expect(sendResult(changedOrder)).toBe(false);
+        })
+    })
 })
 
 
