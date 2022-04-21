@@ -65,8 +65,8 @@ describe('객체의 상태확인 테스트', () => {
 
     test('추가 테스트, 결제완료 후 재고가 변경되었는가?', () => {
         requestOrder(newOrder);
-        completeOrder(newOrder);
-        // setProductNum 함수를 db와 연결해야 재고변경 확인가능.
+        completeOrder(newOrder); // 현재 completeOrder 안에 있는 setProductNum함수에서 재고 변경한다고 가정.
+
     })
 
     // 4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나
@@ -85,7 +85,6 @@ describe('객체의 상태확인 테스트', () => {
             let beforeStatus = newOrder._status;
             completeOrder(newOrder);
             expect(beforeStatus).toEqual(orderStatus.PAY_REQUEST);
-            failOrder(newOrder)
             expect(newOrder._status).not.toEqual(beforeStatus);
         });
 
@@ -95,9 +94,10 @@ describe('객체의 상태확인 테스트', () => {
             // 만약 재고가 부족했다면 status는 여전히 started 일것
             let beforeStatus = overOrder._status;
             expect(beforeStatus).toEqual(orderStatus.PAY_STARTED);
-            failOrder(overOrder);
+            completeOrder(overOrder);
+            expect(overOrder._status).toEqual(orderStatus.PAY_FAILED);
             expect(overOrder._status).not.toEqual(beforeStatus);
-
+            // 전제를 가정해놓고 테스트하고자 하는 함수에 집중. spyOn.
         })
     })
 
@@ -126,7 +126,9 @@ describe('결제가 실패하는 경우 테스트', () => {
     beforeEach(() => {
         failOrder = createSampleOrder('iPhone', 21);
     });
+    describe('1. 사용자의 결제정보가 올바르지 않을 경우', () => {
 
+    })
 })
 
 

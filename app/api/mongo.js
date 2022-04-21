@@ -18,5 +18,9 @@ export const setProductNum = (numChange, productName) => {
     //db 로 가서 해당 product 의 개수를 변경해주는 함수
     // findOneAndUpdate method 를 활용 해서 db collections 에 접근해야함
     // 변경에 성공했을 경우에 true 를 리턴.
+    // 임시 true false 처리.
+    if (numChange > 20) {
+        return false;
+    }
     return true;
 }
