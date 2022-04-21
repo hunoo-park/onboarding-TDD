@@ -28,6 +28,7 @@
 //     1. 여기서 주문의 상세내용이라 함은, 결제 수단 등 사용자의 결제 정보를 의미한다.
 
 import Order, {orderStatus, requestOrder, completeOrder, failOrder} from '../app/func/Order'
+import Card, {validateCard, limitCard} from '../app/func/Card'
 
 // test No.1
 // 1. 주문 객체는 아래와 같은 상태를 가진다
@@ -41,7 +42,7 @@ import Order, {orderStatus, requestOrder, completeOrder, failOrder} from '../app
 describe('객체의 상태확인 테스트', () => {
     let newOrder;
     beforeEach(() => {
-        newOrder = createSampleOrder('MacBook', 10);
+        newOrder = createSampleOrder('MacBook', 10, 100);
     })
     test('1. 결제시작: 직전기록이 비어있어야 함.', () => {
         expect(newOrder._status).toEqual(orderStatus.PAY_STARTED);
@@ -78,7 +79,7 @@ describe('객체의 상태확인 테스트', () => {
     describe('4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나', () => {
         let newOrder;
         beforeEach(() => {
-            newOrder = createSampleOrder('MacBook', 11);
+            newOrder = createSampleOrder('MacBook', 11, 100);
         });
         test('직전기록이 [결제요청] 인 경우', () => {
             requestOrder(newOrder)
@@ -89,7 +90,7 @@ describe('객체의 상태확인 테스트', () => {
         });
 
         test('직전기록이 [결제시작] 인 경우', () => {
-            let overOrder = createSampleOrder('MacBook', 21);
+            let overOrder = createSampleOrder('MacBook', 21, 100);
             requestOrder(overOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
             // 만약 재고가 부족했다면 status는 여전히 started 일것
             let beforeStatus = overOrder._status;
@@ -124,22 +125,45 @@ describe('객체의 상태확인 테스트', () => {
 describe('결제가 실패하는 경우 테스트', () => {
     let failOrder;
     beforeEach(() => {
-        failOrder = createSampleOrder('iPhone', 21);
+        failOrder = createSampleOrder('iPhone', 21, 200);
     });
     describe('1. 사용자의 결제정보가 올바르지 않을 경우', () => {
+        test('카드사와 카드정보가 일치하지 않는 경우', () => {
+            let userCard = createSampleCard(17, 101020 );
+            let authorizationResult = validateCard(userCard);
+            expect(authorizationResult).toBe(false);
+        });
 
-    })
+        test('카드가 한도초과 일 경우', () => {
+            let userCard = createSampleCard(17, 101010);
+            expect(limitCard(userCard, failOrder)).toBe(false);
+        });
+
+        test('2. 결제를 시작한 상품의 재고가 없을 경우', () => {
+
+        })
+    });
 })
 
 
 
-const createSampleOrder = (productName, orderNum) => {
+const createSampleOrder = (productName, orderNum, price) => {
     const presentDate = Date.now();
     return new Order(
         "Hongil",
         productName,
         "payStarted",
         orderNum,
-        presentDate
+        presentDate,
+        price
+    )
+};
+
+const createSampleCard = (cardComp, cardNum) => {
+    return new Card(
+        cardComp,
+        cardNum,
+        "Hongil",
+        "3000"
     )
 };

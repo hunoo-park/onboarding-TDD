@@ -15,12 +15,13 @@ export const orderStatus = {
 
 
 export default class Order {
-    constructor(userName, productName, status, orderNum, date) {
+    constructor(userName, productName, status, orderNum, date, price) {
         this._userName = userName;
         this._productName = productName;
         this._status = status;
         this._orderNum = orderNum;
         this._date = date;
+        this._price = price;
     }
 
     get UserName() {
