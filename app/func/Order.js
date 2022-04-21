@@ -137,7 +137,15 @@ export const requestRefund = (orderObject) => {
 
 export const completeRefund = (orderObject) => {
     // 환불요건을 만족한다면 아래와 같이 상태를 바꾼다.
-    orderObject.status = orderStatus.REFUND_COMPLETE;
+    let purchasedTime = orderObject._purchasedDate;
+    let presentTime = Date.now();
+    purchasedTime = parseInt(purchasedTime);
+    let timeDiff = calDifDate(purchasedTime, presentTime);  // 이 부분 따로 뺴서 함수 만들기 refactoring
+    if (timeDiff < 7) {
+        orderObject.status = orderStatus.REFUND_COMPLETE;
+    } else {
+        orderObject.status = orderStatus.REFUND_FAILED;
+    }
     return orderObject;
 }
 

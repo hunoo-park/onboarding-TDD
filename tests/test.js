@@ -239,7 +239,8 @@ describe('구매일로부터 회사에서 정한 기간이 지났을 경우', ()
     });
 
     test('환불이 불가능한 경우', () => {
-
+        let completedOrder = completeRefund(newOrder);
+        expect(completedOrder._status).toEqual(orderStatus.REFUND_FAILED);
     });
 })
 
