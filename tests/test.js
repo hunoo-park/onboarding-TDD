@@ -43,7 +43,7 @@ import Card, {validateCard, limitCard} from '../app/func/Card'
 describe('객체의 상태확인 테스트', () => {
     let newOrder;
     beforeEach(() => {
-        newOrder = createSampleOrder('MacBook', 10, 100);
+        newOrder = createSampleOrder('MacBook', 10, 100, '000000');
     })
     test('1. 결제시작: 직전기록이 비어있어야 함.', () => {
         expect(newOrder._status).toEqual(orderStatus.PAY_STARTED);
@@ -80,7 +80,7 @@ describe('객체의 상태확인 테스트', () => {
     describe('4. 결제실패: 직전기록이 [결제요청, 결제시작] 중 하나', () => {
         let newOrder;
         beforeEach(() => {
-            newOrder = createSampleOrder('MacBook', 11, 100);
+            newOrder = createSampleOrder('MacBook', 11, 100, '000000');
         });
         test('직전기록이 [결제요청] 인 경우', () => {
             let changedOrder = requestOrder(newOrder)
@@ -91,7 +91,7 @@ describe('객체의 상태확인 테스트', () => {
         });
 
         test('직전기록이 [결제시작] 인 경우', () => {
-            let overOrder = createSampleOrder('MacBook', 21, 100);
+            let overOrder = createSampleOrder('MacBook', 21, 100, '000000');
             let changedOrder = requestOrder(overOrder) // 결제를 시작은 하였음. -> 사용자가 버튼을 누른것
             // 만약 재고가 부족했다면 status는 여전히 started 일것
             let beforeStatus = overOrder._status;
@@ -107,7 +107,7 @@ describe('객체의 상태확인 테스트', () => {
     describe('5. 취소요청: 직전기록이 [결제완료, 환불실패] 중 하나', () => {
         let newOrder, changedOrder, completedOrder;
         beforeEach(() => {
-            newOrder = createSampleOrder('MacBook', 10);
+            newOrder = createSampleOrder('MacBook', 10, 100, '000000');
             changedOrder = requestOrder(newOrder);
             completedOrder = completeOrder(changedOrder);
 
@@ -134,6 +134,7 @@ describe('객체의 상태확인 테스트', () => {
             let canceledOrder = requestCancel(completedOrder);
             let beforeStatus = canceledOrder._status;
             expect(beforeStatus).toEqual(orderStatus.CANCEL_REQUEST);
+            let completedOrder = completeCancel(canceledOrder);
         });
 
         //     8. 환불요청: 직전기록이 [결제완료, 취소실패] 중 하나
@@ -153,7 +154,7 @@ describe('객체의 상태확인 테스트', () => {
 
 
     test('9. 환불완료: 직전기록이 환불요청 이어야 함', () => {
-        let newOrder = createSampleOrder('watch', 3, 1000);
+        let newOrder = createSampleOrder('watch', 3, 1000, '000000');
         let refundedOrder = requestRefund(newOrder);
         let beforeStatus = refundedOrder._status;
         expect(beforeStatus).toEqual(orderStatus.REFUND_REQUEST);
@@ -161,7 +162,7 @@ describe('객체의 상태확인 테스트', () => {
         expect(completedOrder._status).toEqual(orderStatus.REFUND_COMPLETE);
     });
     test('10. 환불실패: 직전기록이 환불요청 이어야 함', () => {
-        let newOrder = createSampleOrder('watch', 3, 1000);
+        let newOrder = createSampleOrder('watch', 3, 1000, '000000');
         let refundedOrder = requestRefund(newOrder);
         let beforeStatus = refundedOrder._status;
         expect(beforeStatus).toEqual(orderStatus.REFUND_REQUEST);
@@ -183,7 +184,7 @@ describe('객체의 상태확인 테스트', () => {
 describe('결제가 실패하는 경우 테스트', () => {
     let failOrder;
     beforeEach(() => {
-        failOrder = createSampleOrder('iPhone', 21, 200);
+        failOrder = createSampleOrder('iPhone', 21, 200, '000000');
     });
     describe('1. 사용자의 결제정보가 올바르지 않을 경우', () => {
         test('카드사와 카드정보가 일치하지 않는 경우', () => {
@@ -207,7 +208,7 @@ describe('결제가 실패하는 경우 테스트', () => {
         });
 
         test('정상적인 응답이 오지 않았을 경우', () => {
-            let newOrder = createSampleOrder('iPad', 15, 200);
+            let newOrder = createSampleOrder('iPad', 15, 200, '000000');
             let beforeStatus = newOrder._status;
             let changedOrder = requestOrder(newOrder);
             sendOrder(changedOrder);
@@ -220,8 +221,26 @@ describe('결제가 실패하는 경우 테스트', () => {
 })
 
 
+// 4. 취소 및 환불은 아래와 같은 경우 불가능하다.
+//     1. 구매일로부터 회사에서 정한 기간이 지났을 경우
+//     2. 취소 및 환불규정을 만족하지 않을 경우
+// 5. 주문의 상세내용은 결제시작 상태(결제요청 이전)에서만 변경 가능하다.
+//     1. 여기서 주문의 상세내용이라 함은, 결제 수단 등 사용자의 결제 정보를 의미한다.
 
-const createSampleOrder = (productName, orderNum, price) => {
+describe('구매일로부터 회사에서 정한 기간이 지났을 경우', () => {
+    let newOrder = createSampleOrder('airpod', 3, 10, '000000')
+    test('취소가 불가능한 경우', () => {
+
+    });
+
+    test('환불이 불가능한 경우', () => {
+
+    });
+})
+
+
+
+const createSampleOrder = (productName, orderNum, price, purchasedDate) => {
     const presentDate = Date.now();
     return new Order(
         "Hongil",
@@ -229,7 +248,8 @@ const createSampleOrder = (productName, orderNum, price) => {
         "payStarted",
         orderNum,
         presentDate,
-        price
+        price,
+        purchasedDate
     )
 };
 
