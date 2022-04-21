@@ -141,6 +141,7 @@ export const completeRefund = (orderObject) => {
     let presentTime = Date.now();
     purchasedTime = parseInt(purchasedTime);
     let timeDiff = calDifDate(purchasedTime, presentTime);  // 이 부분 따로 뺴서 함수 만들기 refactoring
+    console.log(timeDiff);
     if (timeDiff < 7) {
         orderObject.status = orderStatus.REFUND_COMPLETE;
     } else {

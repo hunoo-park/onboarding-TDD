@@ -154,7 +154,7 @@ describe('객체의 상태확인 테스트', () => {
 
 
     test('9. 환불완료: 직전기록이 환불요청 이어야 함', () => {
-        let newOrder = createSampleOrder('watch', 3, 1000, '000000000000');
+        let newOrder = createSampleOrder('watch', 3, 1000, '1649970000000');
         let refundedOrder = requestRefund(newOrder);
         let beforeStatus = refundedOrder._status;
         expect(beforeStatus).toEqual(orderStatus.REFUND_REQUEST);
