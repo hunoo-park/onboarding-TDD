@@ -8,7 +8,11 @@
     "express": "^4.17.3"
   },
   "scripts": {
-    "test": "jest"
+    "start": "node ./app/app.js",
+    "test": "jest --no-cache  --detectOpenHandles --runInBand --forceExit",
+    "test:cov": "jest --coverage",
+    "test:load": "artillery run --output report.json ./tests/loadtest/app-test.yaml",
+    "test:loadreport": "artillery report ./tests/loadtest/report.json"
   },
   "type": "module"
 }
