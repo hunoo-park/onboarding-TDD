@@ -1,11 +1,14 @@
 {
   "devDependencies": {
+    "artillery": "^2.0.0-14",
     "jest": "^27.5.1"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.16.11"
+    "@babel/preset-env": "^7.16.11",
+    "express": "^4.17.3"
   },
   "scripts": {
     "test": "jest"
-  }
+  },
+  "type": "module"
 }

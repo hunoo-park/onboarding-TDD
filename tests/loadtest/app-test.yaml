@@ -1,0 +1,25 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    # 60초 동안 5명의 유저가 초당 1번씩 request 한다.
+    - duration : 60
+      arrivalRate: 5
+      name: Warm up
+    # 60초 동안 가상유저가 5명에서 50까지 증가한다.
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 50
+      name: Ramp up load (1)
+    - duration : 120
+      arrivalRate: 50
+      rampTo: 500
+      name: Ramp up load (2)
+
+    - duration : 120
+      arrivalRate : 500
+      name: Sustained load (1)
+scenarios:
+  - name: "get all card data"
+    flow:
+      - get:
+           url: "/card"
