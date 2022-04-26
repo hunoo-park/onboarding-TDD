@@ -6,7 +6,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - echo $ENV
       - echo $env
-      - aws ecr get-login-password --region Asia/Tokyo | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.Asia/Tokyo.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
   build:
     commands:
       - echo Build started on `date`
@@ -21,7 +21,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - make push
-      - printf '[{"name":"port-nginx","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.Asia/Tokyo.amazonaws.com/port-nginx:latest > imagedefinitions.json
+      - printf '[{"name":"port-nginx","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/port-nginx:latest > imagedefinitions.json
 
 artifacts:
   files:
