@@ -1,9 +1,9 @@
 # 어떤 환경에서 도커 이미지를 만들지 결정하기.
 FROM node:16-alpine3.14
-WORKDIR /usr/app
+WORKDIR /usr
 
 # 패키지 설치 단계
-COPY ["package.json", "package-lock.json","./"]
+COPY ["package.json", "package-lock.json", "./"]
 RUN ["npm", "install"]
 
 # 나머지 모두 복사
@@ -13,4 +13,4 @@ COPY ["app/", "./app/"]
 EXPOSE 3000
 
 # 앱 실행시키기
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "start" ]
