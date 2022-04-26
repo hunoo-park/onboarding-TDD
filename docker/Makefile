@@ -22,8 +22,8 @@ ifeq (${env}, test)
 	@docker build -f _proxy.Dockerfile -t ${LOCAL_IMG_COMMIT_PROXY} ./
 else
 	@echo elseif
-	@docker buildx build --platform=linux/amd64 -f _server.Dockerfile --no-cache -t ${LOCAL_IMG_COMMIT_SERVER} ../
-	@docker buildx build --platform=linux/amd64 -f _proxy.Dockerfile --no-cache -t ${LOCAL_IMG_COMMIT_PROXY} ./
+	@docker buildx build --platform=linux/amd64 -f _server.Dockerfile -t ${LOCAL_IMG_COMMIT_SERVER} ../
+	@docker buildx build --platform=linux/amd64 -f _proxy.Dockerfile -t ${LOCAL_IMG_COMMIT_PROXY} ./
 endif
 	@docker tag ${LOCAL_IMG_COMMIT_SERVER} ${LOCAL_IMG_LATEST_SERVER}
 	@docker tag ${LOCAL_IMG_COMMIT_PROXY} ${LOCAL_IMG_LATEST_PROXY}
