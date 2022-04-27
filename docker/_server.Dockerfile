@@ -16,4 +16,3 @@ EXPOSE 3000
 CMD [ "npm", "start" ]
 # 재배포
 # 2트
-# 3트
