@@ -16,7 +16,7 @@ ECR_IMG_COMMIT_PROXY := ${ECR_ENDPOINT_PROXY}:${TAG}
 ECR_IMG_LATEST_PROXY := ${ECR_ENDPOINT_PROXY}:latest
 
 build:
-ifeq (${env}, test)
+ifeq (${ENV}, test)
 	@echo if
 	@docker build -f _server.Dockerfile -t ${LOCAL_IMG_COMMIT_SERVER} ../
 	@docker build -f _proxy.Dockerfile -t ${LOCAL_IMG_COMMIT_PROXY} ./
