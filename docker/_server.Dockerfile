@@ -14,3 +14,4 @@ EXPOSE 3000
 
 # 앱 실행시키기
 CMD [ "npm", "start" ]
+# 재배포용
