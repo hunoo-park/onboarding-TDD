@@ -3,7 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "arn:aws:ecs:ap-northeast-1:497217256558:task-definition/onboardHW-test-td:1"
+        TaskDefinition: "arn:aws:ecs:ap-northeast-1:497217256558:task-definition/finalHW-test-td:1"
         LoadBalancerInfo:
           ContainerName: "onboard-proxy"
-          ContainerPort: 81
+          ContainerPort: 80

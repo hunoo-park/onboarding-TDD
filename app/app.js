@@ -6,8 +6,8 @@ export const app = express();
 // connect();
 
 
-export const server = app.listen(80, () => {
-    console.log("server opened! port: 80");
+export const server = app.listen(3000, () => {
+    console.log("server opened! port: 3000");
 });
 
 app.get('/', (req, res) => {
